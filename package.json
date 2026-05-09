@@ -1,0 +1,29 @@
+{
+  "name": "social-media-app",
+  "version": "1.0.0",
+  "main": "./dist/main.js",
+  "type": "commonjs",
+  "scripts": {
+    "start:dev": "concurrently \"tsc -w\" \"node --watch ./dist/main.js\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qBasseL/Social-Media.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/qBasseL/Social-Media/issues"
+  },
+  "homepage": "https://github.com/qBasseL/Social-Media#readme",
+  "description": "",
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.6.2",
+    "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
