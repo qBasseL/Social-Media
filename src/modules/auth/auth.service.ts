@@ -1,3 +1,4 @@
+import { LoginDto } from "./auth.dto";
 
 export class AuthenticationService {
 
@@ -5,9 +6,9 @@ export class AuthenticationService {
 
     }
 
-    public Login(data: string): string {
-        throw new Error('Method not implemented.', {cause: {statusCode: 400}});
-        return 'lol';
+    public Login(data: LoginDto): any {
+        // throw new ForbiddenException('Method not implemented.', {cause: {extra: 'Additional error information'}});
+        return data;
     }
 }
 
