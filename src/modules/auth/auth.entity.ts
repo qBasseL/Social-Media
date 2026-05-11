@@ -3,8 +3,7 @@ export interface ILoginResponse {
     password: string;
 }
 
-export interface ISignupResponse {
-    email: string;
-    password: string;
+export interface ISignupResponse extends ILoginResponse {
+    _id: string;
     username: string;
 }

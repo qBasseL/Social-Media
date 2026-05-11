@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response, Router, type Router as RouterType } from "express";
 import  AuthenticationService  from "./auth.service";
 import { successResponse } from "../../common/response";
-import { ILoginResponse } from "./auth.entity";
+import { ILoginResponse, ISignupResponse } from "./auth.entity";
 
 const router: RouterType = Router()
 
@@ -11,8 +11,8 @@ router.post('/login', (req:Request, res:Response, next:NextFunction): Response =
 }) 
 
 router.post('/signup', (req:Request, res:Response, next:NextFunction): Response => {
-    AuthenticationService.Signup(req.body)
-    return successResponse({res, statusCode: 201})
+    const data = AuthenticationService.Signup(req.body)
+    return successResponse<ISignupResponse>({res, statusCode: 201, data})
 }) 
 
 export default router
