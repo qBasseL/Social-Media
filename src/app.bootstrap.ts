@@ -1,6 +1,7 @@
 import express from 'express';
 import { authRouter } from './modules';
 import { GlobalErrorHandler } from './middlewares';
+import { PORT } from './config/config';
 const bootstrap = async () => {
 
     const app: express.Express = express()
@@ -15,8 +16,8 @@ const bootstrap = async () => {
 
     app.use(GlobalErrorHandler)
 
-    app.listen(3000, () => {
-        console.log('Server is running on port 3000')
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`)
     })
 }
 
