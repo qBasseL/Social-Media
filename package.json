@@ -4,7 +4,8 @@
   "main": "./dist/main.js",
   "type": "commonjs",
   "scripts": {
-    "start:dev": "concurrently \"tsc -w\" \"node --watch ./dist/main.js\""
+    "start:dev": "cross-env NODE_ENV=development concurrently \"tsc -w\" \"node --watch ./dist/main.js\"",
+    "start:prod": "cross-env NODE_ENV=production concurrently \"tsc -w\" \"node --watch ./dist/main.js\""
   },
   "repository": {
     "type": "git",
@@ -25,6 +26,7 @@
     "concurrently": "^9.2.1"
   },
   "dependencies": {
+    "cross-env": "^10.1.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
