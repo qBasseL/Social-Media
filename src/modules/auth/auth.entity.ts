@@ -4,6 +4,5 @@ export interface ILoginResponse {
 }
 
 export interface ISignupResponse extends ILoginResponse {
-    _id: string;
     username: string;
 }

@@ -1,6 +1,6 @@
 
 import { LoginDto, SignupDto } from "./auth.dto";
-import { ISignupResponse } from "./auth.entity";
+import { ILoginResponse, ISignupResponse } from "./auth.entity";
 
 export class AuthenticationService {
 
@@ -8,12 +8,12 @@ export class AuthenticationService {
 
     }
 
-    public Login(data: LoginDto): LoginDto {
+    public Login(data: LoginDto): ILoginResponse {
         return data;
     }
 
     public Signup(data: SignupDto): ISignupResponse {
-        return { _id: "2313", ...data };
+        return data;
     }
 
 }
