@@ -4,6 +4,8 @@ import { resolve } from "node:path";
 
 config({ path: resolve(`./.env.${process.env.NODE_ENV}`) })
 
+export const NODE_ENV = process.env.NODE_ENV as string
+
 export const PORT = process.env.PORT;
 export const DB_URI = process.env.DB_URI as string
 export const SALT_ROUND = process.env.SALT_ROUND;

@@ -2,11 +2,14 @@ import express from 'express';
 import { authRouter } from './modules';
 import { GlobalErrorHandler } from './middlewares';
 import { PORT } from './config/config';
+import connectDB from './DB/connection.db';
 const bootstrap = async () => {
 
     const app: express.Express = express()
 
     app.use(express.json())
+
+    await connectDB()
 
     app.use('/auth', authRouter)
 
