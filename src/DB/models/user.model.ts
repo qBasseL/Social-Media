@@ -6,9 +6,8 @@ const userSchema = new Schema<IUser>({
 
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
-    username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    phone: { type: String, required: true },
+    phone: { type: String },
     password: {
         type: String, required: function (this) {
             return this.provider === ProviderEnum.System
@@ -30,6 +29,14 @@ const userSchema = new Schema<IUser>({
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
     collection: "Users"
+})
+
+userSchema.virtual('username').set(function (value: string) {
+    const [firstName, lastName] = value.split(" ") || []
+    this.firstName = firstName as string;
+    this.lastName = lastName as string
+}).get(function () {
+    return this.firstName + ' ' + this.lastName
 })
 
 export const UserModel = models.User || model<IUser>("User", userSchema)

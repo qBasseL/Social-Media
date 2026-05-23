@@ -14,7 +14,7 @@ export const signupSchema = {
     body: loginSchema.body.safeExtend({
         username: generalValidationField.username,
         confirmPassword: generalValidationField.confirmPassword,
-        gender: generalValidationField.gender
+        // gender: generalValidationField.gender
     }).superRefine((data, ctx) => {
 
     if (data.password !== data.confirmPassword) {

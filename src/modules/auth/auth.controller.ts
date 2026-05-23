@@ -4,6 +4,7 @@ import { successResponse } from "../../common/response";
 import { ILoginResponse, ISignupResponse } from "./auth.entity";
 import * as validators from './auth.validation'
 import { validation } from "../../middlewares";
+import { IUser } from "../../common";
 
 
 
@@ -15,8 +16,8 @@ router.post('/login', validation(validators.loginSchema), async (req: Request, r
 })
 
 router.post('/signup', validation(validators.signupSchema), async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
-    const data = AuthenticationService.Signup(req.body)
-    return successResponse<ISignupResponse>({ res, statusCode: 201, data })
+    const data = await AuthenticationService.Signup(req.body)
+    return successResponse<IUser>({ res, statusCode: 201, data })
 })
 
 export default router
