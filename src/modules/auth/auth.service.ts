@@ -18,7 +18,8 @@ export class AuthenticationService {
         const checkUser = await this.userModel.findOne({
             filter: { email },
             projection: { _id: 1, email: 1, username: 1, firstName: 1, lastName: 1 },
-            options: { runValidators: true, lean: true, populate: [{path: 'email', select:''}] }
+            options: { runValidators: true, lean: true },
+            populate: [{ path: 'email', select: 'username' }]
         })
         console.log(checkUser)
 
