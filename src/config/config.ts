@@ -8,8 +8,8 @@ export const NODE_ENV = process.env.NODE_ENV as string
 
 export const PORT = process.env.PORT;
 export const DB_URI = process.env.DB_URI as string
-export const SALT_ROUND = process.env.SALT_ROUND;
-export const IV_LENGTH = process.env.IV_LENGTH
+export const SALT_ROUND = parseInt(process.env.SALT_ROUND as string);
+export const IV_LENGTH = parseInt(process.env.IV_LENGTH as string)
 export const ENC_SECRET_KEY = Buffer.from(process.env.ENC_SECRET_KEY!, 'hex')
 export const TOKEN_ACCESS_SECRET_KEY = process.env.TOKEN_ACCESS_SECRET_KEY as string
 export const TOKEN_REFRESH_SECRET_KEY = process.env.TOKEN_REFRESH_SECRET_KEY as string

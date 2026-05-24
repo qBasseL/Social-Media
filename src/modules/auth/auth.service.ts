@@ -1,6 +1,6 @@
 import { LoginDto, SignupDto } from "./auth.dto";
 import { ILoginResponse } from "./auth.entity";
-import { BadRequestException, ConflictException, IUser } from "../../common";
+import { BadRequestException, ConflictException, generateHash, IUser } from "../../common";
 import { UserRepository } from "../../DB";
 
 export class AuthenticationService {
@@ -14,7 +14,7 @@ export class AuthenticationService {
     }
 
     public async Signup(data: SignupDto): Promise<IUser> {
-        const { email } = data
+        const { email, password, username } = data
         const checkUser = await this.userModel.findOne({
             filter: { email },
             projection: { _id: 1, email: 1, username: 1, firstName: 1, lastName: 1 },
@@ -28,7 +28,11 @@ export class AuthenticationService {
         }
 
         const result = await this.userModel.createOne({
-            data: data
+            data: {
+                email: email,
+                password: await generateHash({plaintext: password}),
+                username: username
+            }
         })
 
         if (!result) {
