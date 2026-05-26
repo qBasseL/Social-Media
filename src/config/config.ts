@@ -21,3 +21,5 @@ export const WEB_CLIENT_ID = process.env.WEB_CLIENT_ID as string
 export const REDIS_URI = process.env.REDIS_URI as string
 export const GOOGLE_APP_PASSWORD = process.env.GOOGLE_APP_PASSWORD as string
 export const GOOGLE_APP_EMAIL = process.env.GOOGLE_APP_EMAIL as string
+export const APP_NAME = process.env.APP_NAME as string
+

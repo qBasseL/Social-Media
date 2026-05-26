@@ -7,7 +7,7 @@ const userSchema = new Schema<IUser>({
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    phone: { type: String },
+    phone: { type: String, required: false },
     password: {
         type: String, required: function (this) {
             return this.provider === ProviderEnum.System

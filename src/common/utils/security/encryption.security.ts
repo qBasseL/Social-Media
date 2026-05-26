@@ -3,7 +3,7 @@ import { ENC_SECRET_KEY, IV_LENGTH } from '../../../config/config'
 import { BadRequestException } from '../../exceptions'
 
 
-export const generateEncryption = (plaintext: string) => {
+export const generateEncryption = (plaintext: string): string => {
 
     const iv = crypto.randomBytes(IV_LENGTH)
     const cipherIV = crypto.createCipheriv('aes-256-cbc', ENC_SECRET_KEY, iv)
@@ -13,7 +13,7 @@ export const generateEncryption = (plaintext: string) => {
     return `${iv.toString('hex')}:${cipherText}`
 }
 
-export const generateDecryption = (cipherText: string) => {
+export const generateDecryption = (cipherText: string): string => {
 
     const [iv, encryptedData] = cipherText.split(':') || [] as string[];
     if (!iv || !encryptedData) {

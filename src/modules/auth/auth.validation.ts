@@ -14,6 +14,7 @@ export const signupSchema = {
     body: loginSchema.body.safeExtend({
         username: generalValidationField.username,
         confirmPassword: generalValidationField.confirmPassword,
+        phone : generalValidationField.phone.optional()
         // gender: generalValidationField.gender
     }).superRefine((data, ctx) => {
 
