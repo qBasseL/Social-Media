@@ -29,19 +29,17 @@ export class AuthenticationService {
             throw new ConflictException("User Already Signedup")
         }
 
-        const userData: Partial<IUser> = {
-            email,
-            password: await generateHash({ plaintext: password }),
-            username,
-            ...(phone ? { phone: generateEncryption(phone) } : {})
-        }
-
         const result = await this.userModel.createOne({
-            data: userData
+            data: {
+                email,
+                username,
+                password: await generateHash({plaintext: password}),
+                ...(phone ? { phone: generateEncryption(phone) } : {})
+            }
         })
 
         if (!result) {
-            throw new BadRequestException("Database Error")
+            throw new BadRequestException("Something went wrong")
         }
 
         await sendEmail({ to: email, subject: "Confirm Email", html: emailTemplate({ code: 342324, title: "Clouven" }) })

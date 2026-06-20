@@ -3,6 +3,8 @@ import { authRouter } from './modules';
 import { GlobalErrorHandler } from './middlewares';
 import { PORT } from './config/config';
 import connectDB from './DB/connection.db';
+import { redisService } from './common';
+
 const bootstrap = async () => {
 
     const app: express.Express = express()
@@ -10,6 +12,7 @@ const bootstrap = async () => {
     app.use(express.json())
 
     await connectDB()
+    await redisService.connectRedis()
 
     app.use('/auth', authRouter)
 
