@@ -20,14 +20,19 @@ router.post('/signup', validation(validators.signupSchema), async (req: Request,
     return successResponse<IUser>({ res, statusCode: 201, data })
 })
 
-router.patch("/confirm-email", validation(validators.confirmEmail), async (req, res, next) => {
+router.patch("/confirm-email", validation(validators.confirmEmail), async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
     const result = await AuthenticationService.confirmSignup(req.body);
     return successResponse({ res, statusCode: 200, data: result });
 });
 
-router.patch("/resend-confirm-email", validation(validators.resendConfirmEmail), async (req, res, next) => {
+router.patch("/resend-confirm-email", validation(validators.resendConfirmEmail), async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
     const result = await AuthenticationService.resendConfirmSignup(req.body);
     return successResponse({ res, statusCode: 200, data: result });
+});
+
+router.post("/login", validation(validators.loginSchema), async (req, res, next) => {
+  const result = await AuthenticationService.Login(req.body);
+  return successResponse({ res, statusCode: 200, data: result });
 });
 
 export default router

@@ -1,8 +1,8 @@
-import { LoginDto, SignupDto } from "./auth.dto";
+import { ConfrimEmailDto, LoginDto, ResendConfrimEmailDto, SignupDto } from "./auth.dto";
 import { ILoginResponse } from "./auth.entity";
 import { BadRequestException, compareHash, ConflictException, createNumberOtp, EmailEnum, generateHash, IUser, NotFoundException, ProviderEnum, redisService, RedisService } from "../../common";
 import { UserRepository } from "../../DB";
-import { generateEncryption } from "../../common/utils/security/encryption.security";
+import { generateDecryption, generateEncryption } from "../../common/utils/security/encryption.security";
 import { emailEvent, sendEmail } from "../../common/utils/email";
 import { emailTemplate } from "../../common/utils/email/template.email";
 
@@ -57,9 +57,38 @@ export class AuthenticationService {
         });
     };
 
-    public Login(data: LoginDto): ILoginResponse {
-        return data;
-    }
+    public async login({ email, password }: LoginDto) {
+
+        const checkUser = await this.userModel.findOne({
+            filter: { email, provider: ProviderEnum.System, confirmEmail: { $exists: true } },
+            // select:'firstName lastName email',
+            options: {
+                lean: true,
+            },
+        });
+        if (!checkUser) {
+            throw new NotFoundException("Couldn't Find This User");
+        }
+        if (!checkUser.confirmEmail) {
+            throw new ConflictException(
+                "Verify your account before you can signin",
+            );
+        }
+        if (checkUser.phone) {
+            checkUser.phone = await generateDecryption(checkUser.phone);
+        }
+        const match = await compareHash({
+            plaintext: password,
+            ciphertext: checkUser.password,
+            // approach: HashApproachEnums.argon2
+        });
+
+        if (!match) {
+            throw new NotFoundException("Email or password is wrong");
+        }
+
+        return createLoginCredentials(checkUser);
+    };
 
     public async Signup(data: SignupDto): Promise<IUser> {
         const { email, password, username, phone } = data
@@ -92,7 +121,7 @@ export class AuthenticationService {
         return result.toJSON()
     }
 
-    public async confirmSignup({ email, otp }: { email: string, otp: string }) {
+    public async confirmSignup({ email, otp }: ConfrimEmailDto) {
 
         const checkUser = await this.userModel.findOne({
             filter: {
@@ -131,8 +160,8 @@ export class AuthenticationService {
         return;
     };
 
-    public async resendConfirmSignup({ email }: { email: string }) {
-       
+    public async resendConfirmSignup({ email }: ResendConfrimEmailDto) {
+
         const checkUser = await this.userModel.findOne({
             filter: {
                 email,
@@ -141,7 +170,7 @@ export class AuthenticationService {
             },
         });
         if (!checkUser) {
-            throw new NotFoundException( "User is not found to be verfied" );
+            throw new NotFoundException("User is not found to be verfied");
         }
 
         await this.resendOTP({
