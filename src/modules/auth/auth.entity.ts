@@ -1,6 +1,6 @@
 export interface ILoginResponse {
-    email: string;
-    password: string;
+    Access_Token: string;
+    Refresh_Token: string;
 }
 
 export interface ISignupResponse extends ILoginResponse {

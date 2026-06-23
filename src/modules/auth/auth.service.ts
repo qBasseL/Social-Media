@@ -1,16 +1,20 @@
 import { ConfrimEmailDto, LoginDto, ResendConfrimEmailDto, SignupDto } from "./auth.dto";
-import { ILoginResponse } from "./auth.entity";
-import { BadRequestException, compareHash, ConflictException, createNumberOtp, EmailEnum, generateHash, IUser, NotFoundException, ProviderEnum, redisService, RedisService } from "../../common";
+
+import { BadRequestException, compareHash, ConflictException, createNumberOtp, EmailEnum, generateHash, IUser, NotFoundException, ProviderEnum, redisService, RedisService, TokenService } from "../../common";
 import { UserRepository } from "../../DB";
 import { generateDecryption, generateEncryption } from "../../common/utils/security/encryption.security";
 import { emailEvent, sendEmail } from "../../common/utils/email";
 import { emailTemplate } from "../../common/utils/email/template.email";
+import { ILoginResponse } from "./auth.entity";
+
 
 export class AuthenticationService {
     private readonly userModel: UserRepository
     private readonly redis: RedisService
+    private readonly tokenService: TokenService
     constructor() {
         this.userModel = new UserRepository()
+        this.tokenService = new TokenService()
         this.redis = redisService
     }
 
@@ -57,7 +61,7 @@ export class AuthenticationService {
         });
     };
 
-    public async login({ email, password }: LoginDto) {
+    public async Login({ email, password }: LoginDto): Promise<ILoginResponse> {
 
         const checkUser = await this.userModel.findOne({
             filter: { email, provider: ProviderEnum.System, confirmEmail: { $exists: true } },
@@ -86,8 +90,8 @@ export class AuthenticationService {
         if (!match) {
             throw new NotFoundException("Email or password is wrong");
         }
-
-        return createLoginCredentials(checkUser);
+        
+        return await this.tokenService.createLoginCredentials(checkUser);
     };
 
     public async Signup(data: SignupDto): Promise<IUser> {

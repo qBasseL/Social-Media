@@ -1,5 +1,6 @@
 import { model, models, Schema } from "mongoose"
-import { GenderEnum, IUser, ProviderEnum, RoleEnum } from "../../common"
+import { IUser } from "../../common"
+import { GenderEnum, RoleEnum, ProviderEnum } from "../../common/enums/user.enum"
 
 
 const userSchema = new Schema<IUser>({
