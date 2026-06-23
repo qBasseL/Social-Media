@@ -35,7 +35,7 @@ export abstract class DatabaseRepository<T> {
         projection?: ProjectionType<T> | null | undefined,
         options?: QueryOptions<T> | null | undefined,
         populate?: PopulateOptions | PopulateOptions[] | null
-    }): Promise<HydratedDocument<T> | FlattenMaps<T> | null> {
+    }): Promise<HydratedDocument<T> | null> {
         const query = this.model.findOne(filter, projection, options)
 
         if (populate) {

@@ -3,9 +3,20 @@ import { generalValidationField } from '../../common';
 
 
 
-export const loginSchema = {
+export const resendConfirmEmail = {
     body: z.strictObject({
         email: generalValidationField.email,
+    })
+}
+
+export const confirmEmail = {
+    body: resendConfirmEmail.body.safeExtend({
+        otp: generalValidationField.otp
+    })
+}
+
+export const loginSchema = {
+    body: resendConfirmEmail.body.safeExtend({
         password: generalValidationField.password,
     })
 }

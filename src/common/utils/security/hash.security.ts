@@ -10,7 +10,7 @@ export const generateHash = async ({ plaintext, salt = SALT_ROUND }: {
 
 export const compareHash = async ({ plaintext, ciphertext }: {
     plaintext: string,
-    ciphertext: string
+    ciphertext: any
 }): Promise<boolean> => {
     return await compare(plaintext, ciphertext)
 }

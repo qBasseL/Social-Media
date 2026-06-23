@@ -1,6 +1,6 @@
 import { LoginDto, SignupDto } from "./auth.dto";
 import { ILoginResponse } from "./auth.entity";
-import { BadRequestException, ConflictException, createNumberOtp, EmailEnum, generateHash, IUser, redisService, RedisService } from "../../common";
+import { BadRequestException, compareHash, ConflictException, createNumberOtp, EmailEnum, generateHash, IUser, NotFoundException, ProviderEnum, redisService, RedisService } from "../../common";
 import { UserRepository } from "../../DB";
 import { generateEncryption } from "../../common/utils/security/encryption.security";
 import { emailEvent, sendEmail } from "../../common/utils/email";
@@ -91,6 +91,67 @@ export class AuthenticationService {
 
         return result.toJSON()
     }
+
+    public async confirmSignup({ email, otp }: { email: string, otp: string }) {
+
+        const checkUser = await this.userModel.findOne({
+            filter: {
+                email,
+                confirmedEmail: { $exists: false },
+                provider: ProviderEnum.System,
+            },
+        });
+        if (!checkUser) {
+            throw new NotFoundException("User is not found to be verfied");
+        }
+
+        const hashOtp = await this.redis.get({
+            key: this.redis.otpTemplateKey({ email, subject: EmailEnum.ConfirmEmail }),
+        });
+
+        if (!hashOtp) {
+            throw new NotFoundException("Didn't find your one time password");
+        }
+
+        if (!(await compareHash({ plaintext: otp, ciphertext: hashOtp }))) {
+            throw new ConflictException("Invalid OTP");
+        }
+
+        checkUser.confirmEmail = new Date();
+        await checkUser.save();
+
+        const keysToDelete = await this.redis.keys({
+            prefix: this.redis.otpTemplateKey({ email, subject: EmailEnum.ConfirmEmail }),
+        }) ?? [];
+
+        if (keysToDelete.length) {
+            await this.redis.deletekey({ key: keysToDelete });
+        }
+
+        return;
+    };
+
+    public async resendConfirmSignup({ email }: { email: string }) {
+       
+        const checkUser = await this.userModel.findOne({
+            filter: {
+                email,
+                confirmedEmail: { $exists: false },
+                provider: ProviderEnum.System,
+            },
+        });
+        if (!checkUser) {
+            throw new NotFoundException( "User is not found to be verfied" );
+        }
+
+        await this.resendOTP({
+            email,
+            subject: EmailEnum.ConfirmEmail,
+            title: "Verify Email",
+        });
+
+        return;
+    };
 
 }
 

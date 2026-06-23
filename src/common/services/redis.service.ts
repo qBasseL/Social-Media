@@ -52,7 +52,7 @@ export class RedisService {
     public set = async ({ key, value, ttl }: { key: string, value: any, ttl?: number | undefined }): Promise<string | null> => {
         try {
             let data = typeof value === "string" ? value : JSON.stringify(value);
-            return ttl
+            return ttl !== undefined
                 ? await this.client.set(key, data, { EX: ttl })
                 : await this.client.set(key, data);
         } catch (error) {

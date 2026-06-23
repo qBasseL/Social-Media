@@ -7,7 +7,8 @@ export const generalValidationField = {
     phone: z.string({ error: "Phone is required" }).regex(/^(00201|01|\+201)(0|1|2|5)\d{8}$/, { error: "Please Enter a Correct Phone Number" }),
     username: z.string({ error: "Username is required" }).min(2, { error: "Username must be at least 2 characters" }).max(25, { error: "Username must be at most 25 characters" }),
     confirmPassword: z.string(),
-    gender: z.enum(GenderEnum)
+    gender: z.enum(GenderEnum),
+    otp: z.string().regex(/^\d{6}$/)
 }
 
 
