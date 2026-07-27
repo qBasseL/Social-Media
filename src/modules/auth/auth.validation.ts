@@ -25,18 +25,18 @@ export const signupSchema = {
     body: loginSchema.body.safeExtend({
         username: generalValidationField.username,
         confirmPassword: generalValidationField.confirmPassword,
-        phone : generalValidationField.phone.optional()
+        phone: generalValidationField.phone.optional()
         // gender: generalValidationField.gender
     }).superRefine((data, ctx) => {
 
-    if (data.password !== data.confirmPassword) {
+        if (data.password !== data.confirmPassword) {
 
-        ctx.addIssue({
-            code: "custom",
-            path: ["confirmPassword"],
-            message:
-                "Password and confirm password should match"
-        })
-    }
-})
+            ctx.addIssue({
+                code: "custom",
+                path: ["confirmPassword"],
+                message:
+                    "Password and confirm password should match"
+            })
+        }
+    })
 }

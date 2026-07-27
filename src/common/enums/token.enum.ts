@@ -1,4 +1,4 @@
 export enum TokenTypeEnums {
     Access_Token = 'access',
-    Tefresh_Token = 'refresh'
+    Refresh_Token = 'refresh'
 }

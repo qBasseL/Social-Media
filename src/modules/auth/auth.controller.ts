@@ -2,8 +2,8 @@ import { NextFunction, Request, Response, Router, type Router as RouterType } fr
 import AuthenticationService from "./auth.service";
 import { successResponse } from "../../common/response";
 import * as validators from './auth.validation'
-import { validation } from "../../middlewares";
-import { IUser } from "../../common";
+import { authentication, authorization, validation } from "../../middlewares";
+import { IUser, RoleEnum, TokenTypeEnums } from "../../common";
 import { ILoginResponse } from "./auth.entity";
 
 
@@ -26,8 +26,28 @@ router.patch("/resend-confirm-email", validation(validators.resendConfirmEmail),
 });
 
 router.post("/login", validation(validators.loginSchema), async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
-  const result = await AuthenticationService.Login(req.body);
-  return successResponse<ILoginResponse>({ res, statusCode: 200, data: result });
+    const result = await AuthenticationService.Login(req.body);
+    return successResponse<ILoginResponse>({ res, statusCode: 200, data: result });
 });
+
+router.post(
+    "/token-rotate",
+    authentication(TokenTypeEnums.Refresh_Token),
+    authorization([RoleEnum.Admin, RoleEnum.User]),
+    async (req, res, next) => {
+        const result = await AuthenticationService.rotateToken(req.user, req.decoded as { jti: string, iat: number, sub: string });
+        return successResponse({ res, statusCode: 201, data: result });
+    },
+);
+
+router.post(
+    "/logout",
+    authentication(TokenTypeEnums.Access_Token),
+    authorization([RoleEnum.Admin, RoleEnum.User]),
+    async (req, res, next) => {
+        const result = await AuthenticationService.logout(req.body, req.user, req.decoded as { jti: string, iat: number, sub: string });
+        return successResponse({ res, statusCode: result });
+    },
+);
 
 export default router

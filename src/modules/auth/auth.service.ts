@@ -1,11 +1,12 @@
 import { ConfrimEmailDto, LoginDto, ResendConfrimEmailDto, SignupDto } from "./auth.dto";
-
-import { BadRequestException, compareHash, ConflictException, createNumberOtp, EmailEnum, generateHash, IUser, NotFoundException, ProviderEnum, redisService, RedisService, TokenService } from "../../common";
+import { BadRequestException, compareHash, ConflictException, createNumberOtp, EmailEnum, generateHash, IUser, LogoutEnums, NotFoundException, ProviderEnum, redisService, RedisService, TokenService } from "../../common";
 import { UserRepository } from "../../DB";
 import { generateDecryption, generateEncryption } from "../../common/utils/security/encryption.security";
 import { emailEvent, sendEmail } from "../../common/utils/email";
 import { emailTemplate } from "../../common/utils/email/template.email";
 import { ILoginResponse } from "./auth.entity";
+import { ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN } from "../../config/config";
+import { HydratedDocument } from "mongoose";
 
 
 export class AuthenticationService {
@@ -90,7 +91,7 @@ export class AuthenticationService {
         if (!match) {
             throw new NotFoundException("Email or password is wrong");
         }
-        
+
         return await this.tokenService.createLoginCredentials(checkUser);
     };
 
@@ -184,6 +185,53 @@ export class AuthenticationService {
         });
 
         return;
+    };
+
+    public async logout({ flag }: { flag: LogoutEnums },
+        user: HydratedDocument<IUser>,
+        { jti, iat, sub }: { jti: string, iat: number, sub: string }): Promise<number> {
+
+        let status = 200;
+
+        switch (flag) {
+            case LogoutEnums.All:
+                user.changeCredentialTime = new Date();
+                await user.save();
+                await this.redis.deletekey({
+                    key: await this.redis.keys({
+                        prefix: this.redis.baseRevokeTokenKey({ userId: sub }),
+                    }) as string[],
+                });
+                break;
+
+            default:
+                await this.redis.set({
+                    key: this.redis.revokeTokenKey({ userId: sub, jti }),
+                    value: jti,
+                    ttl: iat + REFRESH_TOKEN_EXPIRES_IN,
+                });
+                status = 201;
+                break;
+        }
+
+        return status;
+    };
+
+
+    public async rotateToken(user: HydratedDocument<IUser>,
+        { jti, iat, sub }: { jti: string, iat: number, sub: string }) {
+
+        if ((iat + ACCESS_TOKEN_EXPIRES_IN) * 1000 > Date.now() + 30000) {
+            throw new ConflictException(
+                "Current access token is still valid",
+            );
+        }
+        await this.redis.set({
+            key: this.redis.revokeTokenKey({ userId: sub, jti }),
+            value: jti,
+            ttl: iat + REFRESH_TOKEN_EXPIRES_IN,
+        });
+        return this.tokenService.createLoginCredentials(user);
     };
 
 }

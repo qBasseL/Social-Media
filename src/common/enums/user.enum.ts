@@ -13,3 +13,7 @@ export enum ProviderEnum {
     Google
 }
 
+export enum LogoutEnums {
+    All,
+    Only
+}
