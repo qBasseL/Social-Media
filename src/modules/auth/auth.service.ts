@@ -5,8 +5,9 @@ import { generateDecryption, generateEncryption } from "../../common/utils/secur
 import { emailEvent, sendEmail } from "../../common/utils/email";
 import { emailTemplate } from "../../common/utils/email/template.email";
 import { ILoginResponse } from "./auth.entity";
-import { ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN } from "../../config/config";
+import { ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN, WEB_CLIENT_ID } from "../../config/config";
 import { HydratedDocument } from "mongoose";
+import { OAuth2Client } from "google-auth-library";
 
 
 export class AuthenticationService {
@@ -18,6 +19,23 @@ export class AuthenticationService {
         this.tokenService = new TokenService()
         this.redis = redisService
     }
+
+    private async verifyGoogleAccount(idToken: string) {
+        const client = new OAuth2Client(WEB_CLIENT_ID);
+
+        const ticket = await client.verifyIdToken({
+            idToken: idToken,
+            audience: WEB_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+
+        if (!payload?.email_verified) {
+            throw new BadRequestException("Can't use this email");
+        }
+
+        return payload;
+    };
 
     private async resendOTP({ email, subject, title }: { email: string, subject: EmailEnum, title: string }) {
         const isBlocked = await this.redis.ttl({ key: this.redis.otpBlockTemplateKey({ email, subject }) });
@@ -121,7 +139,7 @@ export class AuthenticationService {
             throw new BadRequestException("Something went wrong")
         }
 
-        await sendEmail({ to: email, subject: "Confirm Email", html: emailTemplate({ code: 342324, title: "Clouven" }) })
+        await sendEmail({ to: email, subject: "Confirm Email", html: emailTemplate({ code: await createNumberOtp(), title: "Social Media" }) })
 
         return result.toJSON()
     }
@@ -189,7 +207,7 @@ export class AuthenticationService {
 
     public async logout({ flag }: { flag: LogoutEnums },
         user: HydratedDocument<IUser>,
-        { jti, iat, sub }: { jti: string, iat: number, sub: string }): Promise<number> {
+        { jti, iat, sub, exp }: { jti: string, iat: number, sub: string, exp: number }): Promise<number> {
 
         let status = 200;
 
@@ -208,7 +226,7 @@ export class AuthenticationService {
                 await this.redis.set({
                     key: this.redis.revokeTokenKey({ userId: sub, jti }),
                     value: jti,
-                    ttl: iat + REFRESH_TOKEN_EXPIRES_IN,
+                    ttl: exp - Math.floor(Date.now() / 1000),
                 });
                 status = 201;
                 break;
@@ -219,7 +237,7 @@ export class AuthenticationService {
 
 
     public async rotateToken(user: HydratedDocument<IUser>,
-        { jti, iat, sub }: { jti: string, iat: number, sub: string }) {
+        { jti, iat, sub, exp }: { jti: string, iat: number, sub: string, exp: number }) {
 
         if ((iat + ACCESS_TOKEN_EXPIRES_IN) * 1000 > Date.now() + 30000) {
             throw new ConflictException(
@@ -229,9 +247,71 @@ export class AuthenticationService {
         await this.redis.set({
             key: this.redis.revokeTokenKey({ userId: sub, jti }),
             value: jti,
-            ttl: iat + REFRESH_TOKEN_EXPIRES_IN,
+            ttl: exp - Math.floor(Date.now() / 1000),
         });
         return this.tokenService.createLoginCredentials(user);
+    };
+
+    public async signupWithGmail(idToken: string) {
+        const payload = await this.verifyGoogleAccount(idToken);
+
+        const checkUser = await this.userModel.findOne({
+            filter: {
+                email: payload.email!,
+                provider: ProviderEnum.Google
+            },
+        });
+
+        if (checkUser) {
+            if (checkUser.provider !== ProviderEnum.Google) {
+                throw new ConflictException("Try to login with Google");
+            }
+            return await this.loginWithGmail(idToken);
+        }
+
+        const user = await this.userModel.createOne({
+            data: {
+                firstName: payload.given_name!,
+                lastName: payload.family_name || "empty",
+                email: payload.email!,
+                profilePicture: payload.picture!,
+                confirmEmail: new Date(),
+                provider: ProviderEnum.Google,
+            },
+        });
+
+        return { status: 201, credentials: await this.tokenService.createLoginCredentials(user) };
+    };
+
+    public async loginWithGmail(idToken: string) {
+        const payload = await this.verifyGoogleAccount(idToken);
+
+        const checkUser = await this.userModel.findOne({
+            filter: {
+                email: payload.email!,
+                provider: ProviderEnum.Google,
+            },
+            options: {
+                lean: true,
+            },
+        });
+
+        if (!checkUser) {
+            throw new NotFoundException(
+                "This Account is not found",
+            );
+        }
+
+        if (checkUser.provider !== ProviderEnum.Google) {
+            throw new ConflictException(
+                "Try logging in with your normal credentials.",
+            );
+        }
+
+        return {
+            status: 200,
+            credentials: await this.tokenService.createLoginCredentials(checkUser),
+        };
     };
 
 }
