@@ -5,6 +5,7 @@ import {
   RoleEnum,
   ProviderEnum,
 } from "../../common/enums/user.enum";
+import slugify from "slugify";
 
 const userSchema = new Schema<IUser>(
   {
@@ -48,7 +49,6 @@ userSchema
     const [firstName, lastName] = value.split(" ") || [];
     this.firstName = firstName as string;
     this.lastName = lastName as string;
-    this.slug = value.replaceAll(/\s+/g, "-");
   })
   .get(function () {
     return this.firstName + " " + this.lastName;
@@ -58,12 +58,11 @@ userSchema.pre("validate", function () {
   if (this.password && this.provider === ProviderEnum.Google) {
     throw new BadRequestException("Google Provider Can't Hold Passwords");
   }
-});
-
-userSchema.post("validate", function () {
-  if (!this.slug || this.slug.includes(" ")) {
-    throw new BadRequestException("Wrong slug format");
-  }
+  this.slug = slugify(`${this.firstName} ${this.lastName}`, {
+    lower: true,
+    trim: true,
+    strict: true,
+  });
 });
 
 export const UserModel = models.User || model<IUser>("User", userSchema);
