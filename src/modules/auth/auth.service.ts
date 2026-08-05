@@ -1,13 +1,28 @@
-import { ConfrimEmailDto, LoginDto, ResendConfrimEmailDto, SignupDto } from "./auth.dto";
-import { BadRequestException, compareHash, ConflictException, createNumberOtp, EmailEnum, generateHash, IUser, LogoutEnums, NotFoundException, ProviderEnum, redisService, RedisService, TokenService } from "../../common";
-import { UserRepository } from "../../DB";
-import { generateDecryption, generateEncryption } from "../../common/utils/security/encryption.security";
-import { emailEvent, sendEmail } from "../../common/utils/email";
-import { emailTemplate } from "../../common/utils/email/template.email";
-import { ILoginResponse } from "./auth.entity";
-import { ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN, WEB_CLIENT_ID } from "../../config/config";
-import { HydratedDocument } from "mongoose";
-import { OAuth2Client } from "google-auth-library";
+import {ConfrimEmailDto, LoginDto, ResendConfrimEmailDto, SignupDto} from "./auth.dto";
+import {
+    BadRequestException,
+    compareHash,
+    ConflictException,
+    createNumberOtp,
+    EmailEnum,
+    emailEvent,
+    generateHash,
+    IUser,
+    LogoutEnums,
+    NotFoundException,
+    ProviderEnum,
+    redisService,
+    RedisService,
+    sendEmail,
+    TokenService
+} from "../../common";
+import {UserRepository} from "../../DB";
+import {generateDecryption, generateEncryption} from "../../common/utils/security/encryption.security";
+import {emailTemplate} from "../../common/utils/email/template.email";
+import {ILoginResponse} from "./auth.entity";
+import {ACCESS_TOKEN_EXPIRES_IN, WEB_CLIENT_ID} from "../../config/config";
+import {HydratedDocument} from "mongoose";
+import {OAuth2Client} from "google-auth-library";
 
 
 export class AuthenticationService {
@@ -94,7 +109,7 @@ export class AuthenticationService {
         }
         if (!checkUser.confirmEmail) {
             throw new ConflictException(
-                "Verify your account before you can signin",
+                "Verify your account before you can sign in",
             );
         }
         if (checkUser.phone) {
@@ -123,7 +138,7 @@ export class AuthenticationService {
         })
 
         if (checkUser) {
-            throw new ConflictException("User Already Signedup")
+            throw new ConflictException("User Already Signed up")
         }
 
         const result = await this.userModel.createOne({
@@ -154,7 +169,7 @@ export class AuthenticationService {
             },
         });
         if (!checkUser) {
-            throw new NotFoundException("User is not found to be verfied");
+            throw new NotFoundException("User is not found to be verified");
         }
 
         const hashOtp = await this.redis.get({
@@ -177,7 +192,7 @@ export class AuthenticationService {
         }) ?? [];
 
         if (keysToDelete.length) {
-            await this.redis.deletekey({ key: keysToDelete });
+            await this.redis.deleteKey({key: keysToDelete});
         }
 
         return;
@@ -193,7 +208,7 @@ export class AuthenticationService {
             },
         });
         if (!checkUser) {
-            throw new NotFoundException("User is not found to be verfied");
+            throw new NotFoundException("User is not found to be verified");
         }
 
         await this.resendOTP({
@@ -215,7 +230,7 @@ export class AuthenticationService {
             case LogoutEnums.All:
                 user.changeCredentialTime = new Date();
                 await user.save();
-                await this.redis.deletekey({
+                await this.redis.deleteKey({
                     key: await this.redis.keys({
                         prefix: this.redis.baseRevokeTokenKey({ userId: sub }),
                     }) as string[],

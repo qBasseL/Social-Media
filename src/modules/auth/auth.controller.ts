@@ -1,11 +1,9 @@
-import { NextFunction, Request, Response, Router, type Router as RouterType } from "express";
+import {type NextFunction, type Request, type Response, Router, type Router as RouterType} from "express";
 import AuthenticationService from "./auth.service";
-import { successResponse } from "../../common/response";
+import {IUser, RoleEnum, successResponse, TokenTypeEnums} from "../../common";
 import * as validators from './auth.validation'
-import { authentication, authorization, validation } from "../../middlewares";
-import { IUser, RoleEnum, TokenTypeEnums } from "../../common";
-import { ILoginResponse } from "./auth.entity";
-
+import {authentication, authorization, validation} from "../../middlewares";
+import {ILoginResponse} from "./auth.entity";
 
 
 const router: RouterType = Router()
@@ -44,20 +42,20 @@ router.post(
     "/logout",
     authentication(TokenTypeEnums.Access_Token),
     authorization([RoleEnum.Admin, RoleEnum.User]),
-    async (req, res, next) => {
+    async (req: Request, res: Response, next: NextFunction) => {
         const result = await AuthenticationService.logout(req.body, req.user, req.decoded as { jti: string, iat: number, sub: string, exp: number });
         return successResponse({ res, statusCode: result });
     },
 );
 
-router.post("/signup/gmail", async (req, res, next) => {
+router.post("/signup/gmail", async (req: Request, res: Response, next: NextFunction) => {
     const { status, credentials } = await AuthenticationService.signupWithGmail(
         req.body.idToken,
     );
     return successResponse({ res, statusCode: status, data: credentials });
 });
 
-router.post("/login/gmail", async (req, res, next) => {
+router.post("/login/gmail", async (req: Request, res: Response, next: NextFunction) => {
     const { status, credentials } = await AuthenticationService.loginWithGmail(req.body.idToken);
     return successResponse({ res, statusCode: status, data: credentials });
 });

@@ -1,7 +1,7 @@
-import { createClient, RedisClientType } from "redis";
-import { REDIS_URI } from "../../config/config";
-import { EmailEnum } from "../enums";
-import { Types } from "mongoose";
+import {createClient, RedisClientType} from "redis";
+import {REDIS_URI} from "../../config/config";
+import {EmailEnum} from "../enums";
+import {Types} from "mongoose";
 
 
 type RedisKeyType = { email: string, subject?: EmailEnum }
@@ -137,7 +137,7 @@ export class RedisService {
         }
     };
 
-    public deletekey = async ({ key }: { key: string | string[] }): Promise<number> => {
+    public deleteKey = async ({key}: { key: string | string[] }): Promise<number> => {
         try {
             if (Array.isArray(key)) {
                 if (!key.length) return 0;
