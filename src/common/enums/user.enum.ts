@@ -1,6 +1,6 @@
 export enum GenderEnum {
     Male,
-    Female
+    Female,
 }
 
 export enum RoleEnum {

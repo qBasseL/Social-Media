@@ -1,4 +1,4 @@
-import {ConfrimEmailDto, LoginDto, ResendConfrimEmailDto, SignupDto} from "./auth.dto";
+import {ConfirmEmailDto, LoginDto, ResendConfirmEmailDto, SignupDto} from "./auth.dto";
 import {
     BadRequestException,
     compareHash,
@@ -159,7 +159,7 @@ export class AuthenticationService {
         return result.toJSON()
     }
 
-    public async confirmSignup({ email, otp }: ConfrimEmailDto) {
+    public async confirmSignup({ email, otp }: ConfirmEmailDto) {
 
         const checkUser = await this.userModel.findOne({
             filter: {
@@ -198,7 +198,7 @@ export class AuthenticationService {
         return;
     };
 
-    public async resendConfirmSignup({ email }: ResendConfrimEmailDto) {
+    public async resendConfirmSignup({ email }: ResendConfirmEmailDto) {
 
         const checkUser = await this.userModel.findOne({
             filter: {

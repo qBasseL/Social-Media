@@ -1,11 +1,9 @@
 import { model, models, Schema } from "mongoose";
-import { BadRequestException, IUser } from "../../common";
-import {
-  GenderEnum,
-  RoleEnum,
-  ProviderEnum,
-} from "../../common/enums/user.enum";
+import { BadRequestException, generateHash, IUser } from "../../common";
+import { GenderEnum, ProviderEnum, RoleEnum } from "../../common";
+
 import slugify from "slugify";
+import { generateEncryption } from "../../common/utils/security/encryption.security";
 
 const userSchema = new Schema<IUser>(
   {
@@ -53,6 +51,21 @@ userSchema
   .get(function () {
     return this.firstName + " " + this.lastName;
   });
+
+
+userSchema.pre("save", async function () {
+  console.log(this);
+  if (this.isModified("password")) {
+    this.password = await generateHash({ plaintext: this.password! });
+  }
+  if (this.phone as any) {
+    this.phone = generateEncryption(this.phone as string);
+  }
+});
+
+userSchema.post("save", function () {
+  console.log(this);
+});
 
 userSchema.pre("validate", function () {
   if (this.password && this.provider === ProviderEnum.Google) {

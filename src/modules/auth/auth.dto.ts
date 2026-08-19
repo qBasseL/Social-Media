@@ -5,6 +5,6 @@ export type LoginDto = z.infer<typeof loginSchema.body>
 
 export type SignupDto = z.infer<typeof signupSchema.body>
 
-export type ConfrimEmailDto = z.infer<typeof confirmEmail.body>
+export type ConfirmEmailDto = z.infer<typeof confirmEmail.body>
 
-export type ResendConfrimEmailDto = z.infer<typeof resendConfirmEmail.body>
+export type ResendConfirmEmailDto = z.infer<typeof resendConfirmEmail.body>

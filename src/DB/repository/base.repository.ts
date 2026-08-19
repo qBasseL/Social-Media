@@ -1,4 +1,19 @@
-import { CreateOptions, DeleteResult, HydratedDocument, Model, MongooseUpdateQueryOptions, PopulateOptions, ProjectionType, QueryFilter, QueryOptions, ReturnsNewDoc, Types, UpdateQuery, UpdateResult, UpdateWithAggregationPipeline } from "mongoose";
+import {
+    CreateOptions,
+    DeleteResult,
+    HydratedDocument,
+    Model,
+    MongooseUpdateQueryOptions,
+    PopulateOptions,
+    ProjectionType,
+    QueryFilter,
+    QueryOptions,
+    ReturnsNewDoc,
+    Types,
+    UpdateQuery,
+    UpdateResult,
+    UpdateWithAggregationPipeline
+} from "mongoose";
 
 
 export abstract class DatabaseRepository<T> {
@@ -39,7 +54,7 @@ export abstract class DatabaseRepository<T> {
         const query = this.model.findOne(filter, projection, options)
 
         if (populate) {
-            query.populate(populate)
+            await query.populate(populate)
         }
 
         return await query
@@ -53,7 +68,7 @@ export abstract class DatabaseRepository<T> {
     }) {
         const doc = this.model.findById(id, projection, options)
         if (populate) {
-            doc.populate(populate)
+            await doc.populate(populate)
         }
         return await doc
     }
