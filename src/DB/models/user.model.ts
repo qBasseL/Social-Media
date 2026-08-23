@@ -62,7 +62,7 @@ userSchema
 userSchema.pre(
   "save",
   async function (this: HydratedDocument<IUser> & { wasNew: boolean }) {
-    console.log(this.password, this.phone);
+    // console.log(this.password, this.phone);
     if (this.password && this.isModified("password")) {
       this.password = await generateHash({ plaintext: this.password! });
     }
@@ -85,7 +85,7 @@ userSchema.post("save", async function () {
       }),
     });
   }
-  console.log(this.password, this.phone);
+  // console.log(this.password, this.phone);
 });
 
 userSchema.pre("validate", function () {
@@ -97,7 +97,7 @@ userSchema.pre("validate", function () {
     trim: true,
     strict: true,
   });
-  console.log("validate");
+  // console.log("validate");
 });
 
 export const UserModel = models.User || model<IUser>("User", userSchema);

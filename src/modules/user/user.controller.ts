@@ -31,14 +31,14 @@ router.patch(
   cloudFileUpload({
     storageApproach: MulterEnum.Disk,
     validation: fileFieldValidation.image,
-    maxSize: 1,
+    maxSize: 4,
   }).single("attachment"),
   async (req: Request, res: Response, next: NextFunction) => {
-    // const data = await UserService.ProfileImage(
-    //   req.file as Express.Multer.File,
-    //   req.user,
-    // );
-    return successResponse({ res, data: req.file });
+    const data = await UserService.ProfileImage(
+      req.file as Express.Multer.File,
+      req.user,
+    );
+    return successResponse({ res, data });
   },
 );
 

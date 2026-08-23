@@ -11,6 +11,9 @@ import {
   AWS_SECRET_ACCESS_KEY,
 } from "../../config/config";
 import { randomUUID } from "crypto";
+import { BadRequestException } from "../exceptions";
+import { MulterEnum } from "../enums";
+import { createReadStream } from "fs";
 
 export class S3Service {
   private client: S3Client;
@@ -25,12 +28,14 @@ export class S3Service {
   }
 
   public async uploadAsset({
+    storageApproach = MulterEnum.Memory,
     Bucket = AWS_BUCKET_NAME,
     Path = "general",
     ACL = ObjectCannedACL.private,
     ContentType,
     File,
   }: {
+    storageApproach?: MulterEnum;
     Bucket?: string;
     Path?: string;
     ACL?: ObjectCannedACL;
@@ -42,9 +47,20 @@ export class S3Service {
       Key: `${APPLICATION_NAME}/${Path}/${randomUUID()}__${File.originalname}`,
       ACL,
       ContentType: File.mimetype,
-      Body: File.buffer,
+      Body:
+        storageApproach === MulterEnum.Memory
+          ? File.buffer
+          : createReadStream(File.path),
     });
 
+    if (!command.input.Key) {
+      throw new BadRequestException("Failed to upload this asset");
+    }
+
     await this.client.send(command);
+
+    return command.input?.Key;
   }
 }
+
+export const s3service = new S3Service();
