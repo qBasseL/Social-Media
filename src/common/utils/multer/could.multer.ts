@@ -3,11 +3,16 @@ import { MulterEnum } from "../../enums";
 import { Request } from "express";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
+import { fileFilter } from "./validation.multer";
 
 export const cloudFileUpload = ({
   storageApproach = MulterEnum.Memory,
+  validation = [],
+  maxSize = 4,
 }: {
   storageApproach?: MulterEnum;
+  validation?: string[];
+  maxSize?: number;
 }) => {
   const storage =
     storageApproach === MulterEnum.Memory
@@ -28,5 +33,9 @@ export const cloudFileUpload = ({
             callback(null, `${randomUUID()}__${file.originalname}`);
           },
         });
-  return multer({ storage });
+  return multer({
+    storage,
+    fileFilter: fileFilter(validation),
+    limits: { fileSize: maxSize * 1024 * 1024 },
+  });
 };

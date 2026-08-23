@@ -7,7 +7,10 @@ import {
 } from "../../common";
 import UserService from "./user.service";
 import { authentication, authorization } from "../../middlewares";
-import { cloudFileUpload } from "../../common/utils/multer";
+import {
+  cloudFileUpload,
+  fileFieldValidation,
+} from "../../common/utils/multer";
 
 const router = Router();
 
@@ -25,7 +28,11 @@ router.patch(
   "/profile-image",
   authentication(TokenTypeEnums.Access_Token),
   authorization([RoleEnum.User]),
-  cloudFileUpload({ storageApproach: MulterEnum.Memory }).single("attachment"),
+  cloudFileUpload({
+    storageApproach: MulterEnum.Disk,
+    validation: fileFieldValidation.image,
+    maxSize: 1,
+  }).single("attachment"),
   async (req: Request, res: Response, next: NextFunction) => {
     // const data = await UserService.ProfileImage(
     //   req.file as Express.Multer.File,
