@@ -1,10 +1,10 @@
 import express from "express";
-import { authRouter } from "./modules";
+import { authRouter, userRouter } from "./modules";
 import { GlobalErrorHandler } from "./middlewares";
 import { PORT } from "./config/config";
 import connectDB from "./DB/connection.db";
 import { redisService } from "./common";
-import { UserModel } from "./DB/models/user.model";
+
 
 const bootstrap = async () => {
   const app: express.Express = express();
@@ -15,6 +15,7 @@ const bootstrap = async () => {
   await redisService.connectRedis();
 
   app.use("/auth", authRouter);
+  app.use('/user', userRouter)
 
   app.use(
     "{/*dummy}",
@@ -29,11 +30,14 @@ const bootstrap = async () => {
 
   app.use(GlobalErrorHandler);
 
-  const user = await new UserModel({
-    username: "Bassel Alaa",
-    email: `${Date.now()}@gmail.com`,
-    password: "564643453",
-  }).save();
+  // const user = await new UserModel({
+  //   username: "Bassel Alaa",
+  //   email: `${Date.now()}@gmail.com`,
+  //   password: "564643453",
+  //   phone: '01147688078'
+  // }).save();
+
+
 
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

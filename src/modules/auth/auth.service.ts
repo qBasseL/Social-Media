@@ -17,7 +17,7 @@ import {
     TokenService
 } from "../../common";
 import {UserRepository} from "../../DB";
-import {generateDecryption, generateEncryption} from "../../common/utils/security/encryption.security";
+import {generateDecryption,} from "../../common/utils/security/encryption.security";
 import {emailTemplate} from "../../common/utils/email/template.email";
 import {ILoginResponse} from "./auth.entity";
 import {ACCESS_TOKEN_EXPIRES_IN, WEB_CLIENT_ID} from "../../config/config";
@@ -134,7 +134,6 @@ export class AuthenticationService {
             filter: { email },
             projection: { _id: 1, email: 1, username: 1, firstName: 1, lastName: 1 },
             options: { runValidators: true, lean: true },
-            populate: [{ path: 'email', select: 'username' }]
         })
 
         if (checkUser) {
@@ -145,8 +144,8 @@ export class AuthenticationService {
             data: {
                 email,
                 username,
-                password: await generateHash({ plaintext: password }),
-                ...(phone ? { phone: generateEncryption(phone) } : {})
+                password,
+                ...(phone ? { phone } : {})
             }
         })
 
@@ -154,7 +153,7 @@ export class AuthenticationService {
             throw new BadRequestException("Something went wrong")
         }
 
-        await sendEmail({ to: email, subject: "Confirm Email", html: emailTemplate({ code: await createNumberOtp(), title: "Social Media" }) })
+        // await sendEmail({ to: email, subject: "Confirm Email", html: emailTemplate({ code: await createNumberOtp(), title: "Social Media" }) })
 
         return result.toJSON()
     }

@@ -5,7 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "start:dev": "cross-env NODE_ENV=development concurrently \"tsc -w\" \"node --watch ./dist/main.js\"",
-    "start:prod": "cross-env NODE_ENV=production concurrently \"tsc -w\" \"node ./dist/main.js\"",
+    "start:prod": "cross-env NODE_ENV=production node ./dist/main.js",
     "build": "tsc"
   },
   "repository": {
@@ -33,6 +33,8 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1116.0",
+    "@aws-sdk/lib-storage": "^3.1116.0",
     "bcrypt": "^6.0.0",
     "cross-env": "^10.1.0",
     "dotenv": "^17.4.2",

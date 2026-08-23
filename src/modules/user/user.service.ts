@@ -1,14 +1,19 @@
-import { HydratedDocument } from "mongoose"
-import { IUser } from "../../common"
+import { HydratedDocument } from "mongoose";
+import { IUser } from "../../common";
 
 class UserService {
+  constructor() {}
 
-    constructor() { }
+  public async GetProfile(data: HydratedDocument<IUser>): Promise<any> {
+    return data.toJSON();
+  }
 
-    public async GetProfile(data: HydratedDocument<IUser>): Promise<any> {
-        return Promise.resolve(true)
-    }
-
+  public async ProfileImage(
+    file: Express.Multer.File,
+    user: HydratedDocument<IUser>,
+  ) {
+    return user.toJSON();
+  }
 }
 
-export default new UserService()
+export default new UserService();

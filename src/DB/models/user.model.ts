@@ -1,9 +1,16 @@
-import { model, models, Schema } from "mongoose";
-import { BadRequestException, generateHash, IUser } from "../../common";
-import { GenderEnum, ProviderEnum, RoleEnum } from "../../common";
+import { HydratedDocument, model, models, Schema } from "mongoose";
+import {
+  BadRequestException,
+  createNumberOtp,
+  generateHash,
+  IUser,
+  sendEmail,
+} from "../../common";
+import { GenderEnum, ProviderEnum, RoleEnum } from "../../common/enums";
 
 import slugify from "slugify";
 import { generateEncryption } from "../../common/utils/security/encryption.security";
+import { emailTemplate } from "../../common/utils/email/template.email";
 
 const userSchema = new Schema<IUser>(
   {
@@ -52,19 +59,33 @@ userSchema
     return this.firstName + " " + this.lastName;
   });
 
+userSchema.pre(
+  "save",
+  async function (this: HydratedDocument<IUser> & { wasNew: boolean }) {
+    console.log(this.password, this.phone);
+    if (this.password && this.isModified("password")) {
+      this.password = await generateHash({ plaintext: this.password! });
+    }
+    if (this.phone && this.isModified("phone")) {
+      this.phone = generateEncryption(this.phone as string);
+    }
+    (this as any).wasNew = this.isNew
+  },
+);
 
-userSchema.pre("save", async function () {
-  console.log(this);
-  if (this.isModified("password")) {
-    this.password = await generateHash({ plaintext: this.password! });
+userSchema.post("save", async function () {
+  const that = this as HydratedDocument<IUser> & { wasNew: boolean };
+  if (that.wasNew) {
+    await sendEmail({
+      to: this.email,
+      subject: "Confirm Email",
+      html: emailTemplate({
+        code: await createNumberOtp(),
+        title: "Confrim Email",
+      }),
+    });
   }
-  if (this.phone as any) {
-    this.phone = generateEncryption(this.phone as string);
-  }
-});
-
-userSchema.post("save", function () {
-  console.log(this);
+  console.log(this.password, this.phone);
 });
 
 userSchema.pre("validate", function () {
@@ -76,6 +97,7 @@ userSchema.pre("validate", function () {
     trim: true,
     strict: true,
   });
+  console.log("validate");
 });
 
 export const UserModel = models.User || model<IUser>("User", userSchema);
