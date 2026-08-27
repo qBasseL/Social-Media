@@ -24,22 +24,31 @@ router.get(
   },
 );
 
-router.patch(
+router.post(
   "/profile-image",
   authentication(TokenTypeEnums.Access_Token),
   authorization([RoleEnum.User]),
+  async (req: Request, res: Response, next: NextFunction) => {
+    const data = await UserService.ProfileImage(req.body, req.user);
+    return successResponse({ res, data });
+  },
+);
+
+router.post(
+  "/profile-cover-images",
+  authentication(TokenTypeEnums.Access_Token),
+  authorization([RoleEnum.User]),
   cloudFileUpload({
-    storageApproach: MulterEnum.Disk,
+    storageApproach: MulterEnum.Memory,
     validation: fileFieldValidation.image,
     maxSize: 4,
-  }).single("attachment"),
+  }).array("attachments"),
   async (req: Request, res: Response, next: NextFunction) => {
-    const data = await UserService.ProfileImage(
-      req.file as Express.Multer.File,
+    const data = await UserService.ProfileCoverImage(
+      req.files as Express.Multer.File[],
       req.user,
     );
     return successResponse({ res, data });
   },
 );
-
 export default router;

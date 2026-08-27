@@ -12,13 +12,31 @@ class UserService {
   }
 
   public async ProfileImage(
-    file: Express.Multer.File,
+    {
+      originalName,
+      ContentType,
+    }: { originalName: string; ContentType: string },
+    user: HydratedDocument<IUser>,
+  ): Promise<{ user: IUser; url: string }> {
+    const { url, key } = await this.s3.generatePreSignedLink({
+      Path: `users/${user._id.toString()}/profile`,
+      ContentType,
+      originalName,
+    });
+
+    user.profilePicture = key as string;
+    await user.save();
+    return { user, url };
+  }
+
+  public async ProfileCoverImage(
+    file: Express.Multer.File[],
     user: HydratedDocument<IUser>,
   ) {
-    user.profilePicture = await this.s3.uploadAsset({
-      File: file,
-      Path: `users/${user._id.toString()}/profile`,
-      storageApproach: MulterEnum.Disk
+    user.profileCoverPicture = await this.s3.uploadAssets({
+      Files: file,
+      Path: `users/${user._id.toString()}/profile-cover`,
+      storageApproach: MulterEnum.Memory,
     });
     await user.save();
     return user.toJSON();
