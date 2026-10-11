@@ -1,5 +1,9 @@
 import {
   CompleteMultipartUploadCommandOutput,
+  DeleteObjectCommand,
+  DeleteObjectCommandOutput,
+  DeleteObjectsCommand,
+  DeleteObjectsCommandOutput,
   GetObjectCommand,
   GetObjectCommandOutput,
   ObjectCannedACL,
@@ -14,15 +18,15 @@ import {
   AWS_REGION,
   AWS_SECRET_ACCESS_KEY,
 } from "../../config/config";
-import { randomUUID } from "crypto";
-import { BadRequestException } from "../exceptions";
-import { MulterEnum } from "../enums";
-import { createReadStream } from "fs";
-import { Upload } from "@aws-sdk/lib-storage";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import {randomUUID} from "crypto";
+import {BadRequestException} from "../exceptions";
+import {MulterEnum} from "../enums";
+import {createReadStream} from "fs";
+import {Upload} from "@aws-sdk/lib-storage";
+import {getSignedUrl} from "@aws-sdk/s3-request-presigner";
 
 export class S3Service {
-  private client: S3Client;
+  private readonly client: S3Client;
   constructor() {
     this.client = new S3Client({
       region: AWS_REGION,
@@ -178,7 +182,7 @@ export class S3Service {
       ResponseContentDisposition:
         download === "true"
           ? `attachment; filename="${fileName || Key.split("/").pop()}"`
-          : undefined,
+            : "inline",
     });
 
     const url = await getSignedUrl(this.client, command, { expiresIn });
@@ -197,6 +201,39 @@ export class S3Service {
       Bucket,
       Key,
     });
+
+    return await this.client.send(command);
+  }
+
+  public async deleteAsset({
+                             Bucket = AWS_BUCKET_NAME,
+                             Key,
+                           }: {
+    Bucket?: string;
+    Key?: string;
+  }): Promise<DeleteObjectCommandOutput> {
+    const command = new DeleteObjectCommand({
+      Bucket,
+      Key,
+    });
+
+    return await this.client.send(command);
+  }
+
+  public async deleteAssets({
+                              Bucket = AWS_BUCKET_NAME,
+                              Keys,
+                            }: {
+    Bucket?: string;
+    Keys?: { Key: string }[];
+  }): Promise<DeleteObjectsCommandOutput> {
+    const command = new DeleteObjectsCommand({
+      Bucket,
+      Delete: {
+        Objects: Keys,
+        Quiet: false
+      }
+    })
 
     return await this.client.send(command);
   }

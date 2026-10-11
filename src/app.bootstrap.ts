@@ -1,11 +1,11 @@
 import express from "express";
-import { authRouter, userRouter } from "./modules";
-import { GlobalErrorHandler } from "./middlewares";
-import { PORT } from "./config/config";
+import {authRouter, userRouter} from "./modules";
+import {GlobalErrorHandler} from "./middlewares";
+import {PORT} from "./config/config";
 import connectDB from "./DB/connection.db";
-import { redisService, s3service, successResponse } from "./common";
-import { promisify } from "node:util";
-import { pipeline } from "node:stream";
+import {redisService, s3service, successResponse} from "./common";
+import {promisify} from "node:util";
+import {pipeline} from "node:stream";
 
 const s3WriteStream = promisify(pipeline);
 
@@ -40,6 +40,8 @@ const bootstrap = async () => {
           "Content-Disposition",
           `attachment; filename="${fileName || Key.split("/").pop()}"`,
         );
+      } else {
+        res.setHeader("Content-Disposition", "inline");
       }
       return await s3WriteStream(Body as NodeJS.ReadableStream, res);
     },
